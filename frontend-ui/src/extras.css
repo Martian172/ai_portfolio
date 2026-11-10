@@ -174,3 +174,68 @@ a.slot:hover, a.slot:focus-visible {
   .ach-toast, .ach-toast__icon, .slot--legendary .slot__icon, .slot__badge, .trophy-btn.is-bump { animation: none; }
   .crt body::after { animation: none; }
 }
+
+/* ==========================================================
+   TYPE SYSTEM: Arcade Technical
+   Chakra Petch = display (compact sci-fi), IBM Plex Sans = body,
+   IBM Plex Mono = HUD labels / terminal, Doto = dot-matrix readouts.
+   These faces ship fixed weights, so weights are set with font-weight
+   and the older variable-font "wght" settings are reset here.
+   ========================================================== */
+:root {
+  --font: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --display: "Chakra Petch", "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --dot: "Doto", "IBM Plex Mono", monospace;
+  --fs-mono: 0.7rem;
+  --fs-lead: clamp(1rem, 0.6vw + 0.85rem, 1.25rem);
+}
+body { font-variation-settings: normal; font-weight: 400; }
+.text-mono { letter-spacing: 0.1em; font-weight: 500; }
+
+/* Display headings: Chakra Petch tops out at 700 */
+.chapter-title, .caption, .split__banner-inner, .street__title, .store__plate, .forrent strong,
+.factory__title, .box__name b, .board__name, .board__title, .quests__top strong, .chat-drawer__id strong,
+.wordmark, .brand__top b {
+  font-variation-settings: normal; font-weight: 700; letter-spacing: 0.01em;
+}
+.brand__top { font-variation-settings: normal; font-weight: 500; letter-spacing: 0.05em; }
+.brand__bottom { font-variation-settings: normal; font-weight: 500; letter-spacing: 0.12em; }
+
+/* Light italic accents inside headings, in the body face */
+.chapter-title em, .caption em, .factory__title em, .split__hex {
+  font-family: var(--font); font-variation-settings: normal; font-weight: 300; letter-spacing: -0.01em;
+}
+.lead, .box__name span { font-variation-settings: normal; font-weight: 300; }
+.board__related li { font-variation-settings: normal; font-weight: 500; }
+.chat-teaser b { font-variation-settings: normal; font-weight: 600; }
+
+/* Calmer sizes */
+.chapter-title { font-size: clamp(1.5rem, 3.2vw, 3rem); line-height: 1.05; }
+.board .chapter-title { font-size: clamp(1.4rem, 2.8vw, 2.6rem); }
+.term-section .chapter-title { font-size: clamp(1.35rem, 2.5vw, 2.5rem); }
+.split__stage { --cap: clamp(0.9rem, 1.8vw, 2.1rem); }
+.split--finale .caption { --cap: clamp(1.2rem, 3.4vw, 3rem); }
+.caption--center { font-size: clamp(0.85rem, 1.4vw, 1.6rem); }
+.street__title { font-size: clamp(1.15rem, 2.3vw, 2.4rem); }
+.factory__title { font-size: clamp(1.1rem, 2vw, 2.1rem); }
+.board__title { font-size: clamp(1.4rem, 2.6vw, 2.4rem); line-height: 1.05; }
+.board__name { font-size: clamp(1rem, 1.6vw, 1.5rem); }
+.quests__top strong { font-size: 0.95rem; }
+.lead { font-size: clamp(1rem, 1.2vw, 1.2rem); line-height: 1.5; }
+.board__desc { font-size: clamp(0.95rem, 1.05vw, 1.1rem); }
+.player__name { font-size: clamp(2rem, 3.6vw, 3.2rem); }
+.player__stats dd { font-size: clamp(1.35rem, 2vw, 1.85rem); }
+
+/* Mono runs wider than the old HUD face: keep long labels on one line */
+.btn { letter-spacing: 0.05em; }
+.ach-toast__kicker, .slot__rarity, .slot__badge { letter-spacing: 0.08em; }
+
+@media (max-width: 720px) {
+  .street__title { font-size: clamp(1.05rem, 4.6vw, 1.5rem); }
+  .split__stage { --cap: clamp(0.85rem, 4vw, 1.7rem); }
+  .caption--center { font-size: clamp(0.8rem, 3.4vw, 1.1rem); }
+}
+
+/* Shop signs: Plex Mono is wider than the old HUD face, so tighten the fascia line to keep "KIND · YEAR" whole */
+.store__fascia { letter-spacing: 0.04em; gap: 0.8em; padding: 0 1.6em; font-size: max(8px, 0.96em); }

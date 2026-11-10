@@ -1,0 +1,33 @@
+# ---- Secrets: never commit these ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+.vercel/
+
+# ---- Python ----
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+
+# ---- Node / Vite ----
+node_modules/
+dist/
+*.local
+
+# ---- OS / editor clutter ----
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# ---- Local scratch files ----
+Screenshot*.png
+*.log

@@ -1,0 +1,176 @@
+/* ==========================================================
+   RESUME + LINKEDIN — header link, inventory slots, finale chips
+   ========================================================== */
+.site-header__resume { display: inline-flex; align-items: center; gap: 0.4em; }
+
+/* Header fit: drop the decorative clock, then the scroll %, as width runs out */
+.site-header__meta { white-space: nowrap; flex: 0 0 auto; }
+@media (max-width: 1100px) {
+  .site-header__meta > .online-dot, .site-header__meta > span:nth-child(2) { display: none; }
+}
+@media (max-width: 760px) {
+  .site-header__meta { gap: 0.5rem; padding-left: 0.75rem; }
+  .site-header__pct { display: none; }
+  /* The split halves slide apart under the logo on phones: give the name a paper chip so it stays readable on the dark side */
+  .site-header.theme-split .brand__word {
+    padding: 0.3rem 0.45rem; margin-left: -0.3rem; border-radius: 6px;
+    background: var(--bg); box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.55);
+  }
+}
+.site-header__resume svg { transition: transform 0.4s var(--ease); }
+.site-header__resume:hover svg { transform: translateY(2px); }
+
+.inventory { margin-top: 2.4rem; max-width: 30rem; }
+.inventory__head { display: flex; justify-content: space-between; padding-bottom: 0.6rem; margin-bottom: 0.8rem; border-bottom: 1px dashed var(--night-line); color: var(--amber); }
+.inventory__slots { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.55rem; }
+.inventory__slots > li { min-width: 0; }
+.slot {
+  --rare: var(--dim);
+  position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem; height: 100%;
+  min-height: 7.4rem; padding: 0.75rem 0.7rem 0.6rem; border-radius: 10px;
+  background: linear-gradient(180deg, var(--night-2), var(--night)); border: 1px solid var(--night-3);
+  box-shadow: inset 0 -3px 0 color-mix(in srgb, var(--rare) 55%, transparent);
+  transition: transform 0.4s var(--ease), border-color 0.25s, box-shadow 0.4s var(--ease);
+}
+.slot--legendary { --rare: var(--amber); border-color: color-mix(in srgb, var(--amber) 45%, var(--night-3)); }
+.slot--rare { --rare: var(--red); }
+.slot--empty {
+  min-height: 3.2rem; border-style: dashed; box-shadow: none;
+  background: repeating-linear-gradient(135deg, transparent 0 6px, rgba(244, 241, 234, 0.035) 6px 7px);
+}
+a.slot:hover, a.slot:focus-visible {
+  transform: translateY(-4px); border-color: var(--rare);
+  box-shadow: inset 0 -3px 0 var(--rare), 0 14px 30px -14px var(--rare);
+}
+.slot__icon {
+  display: grid; place-items: center; width: 2.4rem; height: 2.4rem; margin-bottom: 0.35rem; border-radius: 8px;
+  color: var(--rare); background: color-mix(in srgb, var(--rare) 12%, transparent);
+}
+.slot--legendary .slot__icon { animation: loot-glow 2.4s ease-in-out infinite; }
+@keyframes loot-glow { 0%, 100% { box-shadow: 0 0 0 rgba(255, 181, 71, 0); } 50% { box-shadow: 0 0 18px rgba(255, 181, 71, 0.55); } }
+.slot__name { font-family: var(--display); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.slot__meta { font-size: 0.62rem; letter-spacing: 0.06em; text-transform: none; color: var(--dim); overflow-wrap: anywhere; }
+.slot__rarity { margin-top: auto; padding-top: 0.35rem; font-size: 0.58rem; color: var(--rare); }
+.slot__badge {
+  position: absolute; top: -0.5rem; right: -0.4rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.56rem;
+  background: var(--red); color: var(--bg); rotate: 6deg; animation: bubble-bob 2.4s ease-in-out infinite;
+}
+@media (max-width: 520px) {
+  .inventory__slots { grid-template-columns: repeat(2, 1fr); }
+  .slot--empty { display: none; }
+}
+
+.split__chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.45rem; }
+.split__mail--loot { background: var(--amber); color: var(--night); font-weight: 700; }
+.split__mail--loot:hover { color: var(--night); background: #ffc66e; }
+.split__mail-short { display: none; }
+@media (max-width: 760px) {
+  .split__cta { flex-direction: row; translate: -50% 0; bottom: max(0.9rem, 2.5svh); gap: 0.5rem; }
+  .split__cta .btn { padding: 0.85rem 1.05rem; }
+  .split__chips { flex-basis: 100%; }
+  .split__chips .split__mail { padding: 0.4rem 0.65rem; }
+  .split__mail-full { display: none; }
+  .split__mail-short { display: inline; }
+}
+
+/* ==========================================================
+   ACHIEVEMENTS — trophy counter, toasts, trophy room, CRT mode
+   ========================================================== */
+.trophy-btn {
+  display: inline-flex; align-items: center; gap: 0.35rem; height: 1.9rem; padding: 0 0.6rem; border-radius: 100px;
+  border: 1px solid currentColor; font-variant-numeric: tabular-nums; opacity: 0.8;
+  transition: opacity 0.2s, background 0.25s, color 0.25s;
+}
+.trophy-btn:hover, .trophy-btn.is-open { opacity: 1; }
+.trophy-btn.is-open { background: var(--amber); border-color: var(--amber); color: var(--night); }
+.trophy-btn.is-bump { animation: trophy-bump 0.7s var(--ease); color: var(--amber); opacity: 1; }
+@keyframes trophy-bump {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.3) rotate(-8deg); }
+  60% { transform: scale(0.95) rotate(4deg); }
+  100% { transform: none; }
+}
+
+.ach-toast-wrap {
+  position: fixed; left: 50%; top: 6rem; translate: -50% 0; z-index: 80; pointer-events: none;
+  width: max-content; max-width: calc(100vw - 2rem);
+}
+.ach-toast {
+  display: flex; align-items: center; gap: 0.9rem; padding: 0.7rem 1rem 0.7rem 0.7rem; border-radius: 12px;
+  background: var(--night); color: var(--bg); border: 1px solid var(--amber);
+  box-shadow: 0 0 0 4px rgba(255, 181, 71, 0.12), 0 22px 44px -18px rgba(0, 0, 0, 0.75), 0 0 30px -8px rgba(255, 181, 71, 0.45);
+  animation: ach-in 3.6s var(--ease) forwards;
+}
+@keyframes ach-in {
+  0% { opacity: 0; transform: translateY(-24px) scale(0.92); }
+  8%, 88% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateY(-16px) scale(0.96); }
+}
+.ach-toast__icon {
+  display: grid; place-items: center; flex: 0 0 auto; width: 2.8rem; height: 2.8rem; border-radius: 9px;
+  background: var(--amber); color: var(--night); animation: ach-spin 0.9s var(--ease) 0.15s both;
+}
+@keyframes ach-spin { from { transform: rotateY(0) scale(0.6); } to { transform: rotateY(720deg) scale(1); } }
+.ach-toast__text { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.ach-toast__kicker { color: var(--amber); font-size: 0.62rem; }
+.ach-toast__name { font-family: var(--display); font-size: 0.95rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.ach-toast__desc { font-size: 0.82rem; color: var(--dim); }
+.ach-toast__xp {
+  flex: 0 0 auto; align-self: flex-start; padding: 0.2rem 0.45rem; border-radius: 4px;
+  background: var(--red); color: var(--bg); font-size: 0.6rem;
+}
+
+.ach-scrim { position: fixed; inset: 0; z-index: 71; }
+.ach-panel {
+  position: fixed; top: 5.6rem; right: var(--gut); z-index: 72; width: min(340px, calc(100vw - 2rem));
+  max-height: calc(100svh - 7rem); overflow: auto; padding: 1.1rem; border-radius: 14px;
+  background: var(--night); color: var(--bg); border: 1px solid var(--night-3); box-shadow: 0 30px 60px -24px rgba(0, 0, 0, 0.8);
+  opacity: 0; transform: translateY(-10px) scale(0.98); transform-origin: top right; pointer-events: none;
+  transition: opacity 0.3s var(--ease), transform 0.4s var(--ease);
+}
+.ach-panel.is-open { opacity: 1; transform: none; pointer-events: auto; }
+.ach-panel__head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.9rem; }
+.ach-panel__head > div { display: flex; flex-direction: column; gap: 0.2rem; }
+.ach-panel__title { font-family: var(--display); font-size: 1.1rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.ach-panel__close { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; border: 1px solid var(--night-3); }
+.ach-panel__close:hover { border-color: var(--amber); color: var(--amber); }
+.ach-panel__meter { display: flex; justify-content: space-between; color: var(--dim); margin-bottom: 0.45rem; }
+.ach-panel__bar { background: var(--night-2); }
+.ach-panel__bar i { background: repeating-linear-gradient(90deg, var(--amber) 0 10px, #e09a2c 10px 12px); transition: width 0.8s var(--ease); }
+.ach-list { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: 0.45rem; }
+.ach-item { display: flex; gap: 0.7rem; align-items: center; padding: 0.6rem; border-radius: 9px; background: var(--night-2); border: 1px solid transparent; }
+.ach-item__icon {
+  display: grid; place-items: center; flex: 0 0 auto; width: 2rem; height: 2rem; border-radius: 7px;
+  background: var(--night-3); color: var(--dim);
+}
+.ach-item__text { display: flex; flex-direction: column; min-width: 0; }
+.ach-item__text strong { font-size: 0.85rem; color: var(--dim); }
+.ach-item__text span { font-size: 0.76rem; color: var(--dim); opacity: 0.75; }
+.ach-item.is-got { border-color: rgba(255, 181, 71, 0.35); }
+.ach-item.is-got .ach-item__icon { background: var(--amber); color: var(--night); }
+.ach-item.is-got .ach-item__text strong { color: var(--bg); }
+.ach-item.is-got .ach-item__text span { opacity: 1; }
+.ach-crt {
+  display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.9rem; padding: 0.5rem 0.8rem;
+  border-radius: 100px; border: 1px solid var(--night-3);
+}
+.ach-crt.is-on { background: var(--amber); color: var(--night); border-color: var(--amber); }
+
+/* Secret CRT mode (Konami code): scanlines, vignette and a faint flicker over the whole page */
+.crt body::after {
+  content: ""; position: fixed; inset: 0; z-index: 89; pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.18) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+  animation: crt-flicker 0.12s steps(2) infinite;
+}
+@keyframes crt-flicker { 50% { opacity: 0.88; } }
+
+@media (max-width: 760px) {
+  .ach-toast-wrap { top: 4.9rem; }
+  .ach-panel { top: 4.6rem; right: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ach-toast, .ach-toast__icon, .slot--legendary .slot__icon, .slot__badge, .trophy-btn.is-bump { animation: none; }
+  .crt body::after { animation: none; }
+}

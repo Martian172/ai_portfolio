@@ -209,21 +209,27 @@ export default function ContactPage() {
         }),
       });
       if (!res.ok) {
+        // Only show the server's own wording for the cases it writes for visitors;
+        // anything else (404, 500, proxy errors) gets one plain fallback.
         let detail = "";
-        try {
-          const data = await res.json();
-          detail = typeof data.detail === "string" ? data.detail : "";
-        } catch {
-          /* not JSON */
+        if ([429, 502, 503].includes(res.status)) {
+          try {
+            const data = await res.json();
+            detail = typeof data.detail === "string" ? data.detail : "";
+          } catch {
+            /* not JSON */
+          }
         }
         if (res.status === 422) detail = "Some fields need another look. Check your name, email and message.";
-        throw new Error(detail || "Your message couldn't be sent. Please email me directly.");
+        throw new Error(detail || "The message service isn't reachable right now. Please email me directly.");
       }
       setStatus({ state: "sent", error: "" });
       sfx.chime();
       unlock("signal");
     } catch (err) {
-      setStatus({ state: "error", error: err.message || "Your message couldn't be sent. Please email me directly." });
+      // A network failure throws a browser TypeError ("Failed to fetch"); never show that raw text.
+      const friendly = err instanceof TypeError ? "" : err.message;
+      setStatus({ state: "error", error: friendly || "The message service isn't reachable right now. Please email me directly." });
     }
   }
 

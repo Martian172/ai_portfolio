@@ -90,6 +90,17 @@
   font-family: var(--mono); font-size: 0.92rem;
 }
 .c-field input::placeholder, .c-field textarea::placeholder { color: var(--dim); opacity: 0.8; }
+/* Browser autofill paints a light background; keep the night theme. */
+.c-field input:-webkit-autofill,
+.c-field input:-webkit-autofill:hover,
+.c-field input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--bg);
+  caret-color: var(--bg);
+  -webkit-box-shadow: 0 0 0 1000px var(--night) inset;
+  box-shadow: 0 0 0 1000px var(--night) inset;
+  transition: background-color 9999s ease-out 0s;
+}
+.c-field input:autofill { background: var(--night); color: var(--bg); }
 .c-field input:focus, .c-field textarea:focus { border-color: var(--amber); }
 .c-field input:focus-visible, .c-field textarea:focus-visible { outline: none; box-shadow: 0 1px 0 var(--amber); }
 .c-field textarea:focus-visible { box-shadow: 0 0 0 3px rgba(255, 181, 71, 0.18); }

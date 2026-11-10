@@ -94,7 +94,24 @@ If you are copying this starter rather than using the supplied folder, the files
 
 The GitHub cards show real public repository metadata (description, language, topics, stars and link). Repository metadata alone does not prove the exact implementation or your personal contribution. Keep repository descriptions and README files detailed, and make sure your resume accurately describes your role, tools and outcomes. The assistant is instructed not to invent implementation details that are absent from its context.
 
-## 5. Security
+## 5. Deploying to Vercel
+
+The site and the API deploy together as one Vercel project using [Services](https://vercel.com/docs/services) (`vercel.json`):
+
+- `frontend-ui/` is built with Vite and served from Vercel's CDN at `/`.
+- `backend/` runs FastAPI (`main:app`) as a Python function at `/api/*`, on the same domain, so no CORS setup is needed.
+
+Steps:
+
+1. On https://vercel.com/new, import this GitHub repository. Keep the root directory as the repo root; `vercel.json` defines both services.
+2. In **Settings → Environment Variables**, add `GROQ_API_KEY` (required) and optionally `GITHUB_TOKEN` (a fine-grained token with public read-only access, which avoids GitHub's anonymous rate limit).
+3. Deploy. Every push to `main` redeploys automatically.
+
+On Vercel, `TRUST_PROXY` defaults to on so rate limits use the visitor's real IP. The resume the AI reads is `backend/resume.pdf`; the downloadable copy is `frontend-ui/public/Ansh_Singh_Resume.pdf`.
+
+Local development mirrors production: `npm run dev` proxies `/api` to the backend on `http://127.0.0.1:8000`.
+
+## 6. Security
 
 **Secrets stay on the server.** `GROQ_API_KEY` and `GITHUB_TOKEN` are read only by the FastAPI backend from `.env` (locally) or the hosting platform's environment variables (in production). The browser never sees them: it only talks to `/api/chat`, and the backend calls Groq.
 

@@ -14,9 +14,10 @@ import Achievements, { TrophyButton, unlock } from "./Achievements.jsx";
 // CONFIGURATION & CONTENT (from Ansh's resume)
 // ============================================================
 
-// Public backend URL, set at build time (frontend-ui/.env → VITE_API_URL). This is NOT a secret:
-// API keys live only on the backend server and never reach the browser.
-const API_URL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
+// The API is served from the same domain under /api (Vercel in production, the Vite proxy in
+// development). Set VITE_API_URL only if the backend lives on a different domain. It is NOT a
+// secret: API keys live only on the backend server and never reach the browser.
+const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
 const GITHUB_USERNAME = "martian172";
 const GITHUB_PROFILE_URL = `https://github.com/${GITHUB_USERNAME}`;
 const EMAIL = "singhanshz172@gmail.com";

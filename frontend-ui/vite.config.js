@@ -32,10 +32,14 @@ function contentSecurityPolicy(apiUrl) {
   };
 }
 
+// Local backend that /api is forwarded to during `npm run dev` / `npm run preview`.
+const LOCAL_API = { '/api': { target: process.env.API_PROXY_TARGET || 'http://127.0.0.1:8000', changeOrigin: true } };
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
   return {
-    plugins: [react(), contentSecurityPolicy(env.VITE_API_URL || 'http://127.0.0.1:8000')],
-    server: { host: '127.0.0.1', port: 5173 },
+    plugins: [react(), contentSecurityPolicy(env.VITE_API_URL || '')],
+    server: { host: '127.0.0.1', port: 5173, proxy: LOCAL_API },
+    preview: { host: '127.0.0.1', port: 4173, proxy: LOCAL_API },
   };
 });

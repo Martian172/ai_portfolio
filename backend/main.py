@@ -32,8 +32,12 @@ GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b").strip()
 GITHUB_USERNAME = os.getenv("GITHUB_USERNAME", "").strip()
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "").strip()  # Optional; useful for higher GitHub API limits.
 
+BACKEND_DIR = Path(__file__).resolve().parent
 _resume_path_value = Path(os.getenv("RESUME_PATH", "ansh.pdf"))
 RESUME_PATH = _resume_path_value if _resume_path_value.is_absolute() else (ROOT_DIR / _resume_path_value).resolve()
+if not RESUME_PATH.exists():
+    # Deployed backends only ship the backend/ folder, so fall back to the copy kept there.
+    RESUME_PATH = BACKEND_DIR / "resume.pdf"
 
 
 def _env_int(name: str, default: int) -> int:
@@ -54,7 +58,12 @@ ALLOWED_ORIGINS = [
 ENABLE_DOCS = os.getenv("ENABLE_DOCS", "false").strip().lower() == "true"
 # Behind a hosting proxy (Vercel, Render, etc.) the visitor's IP is in X-Forwarded-For.
 # Only trust that header when the platform sets it, otherwise anyone could spoof it.
-TRUST_PROXY = os.getenv("TRUST_PROXY", "false").strip().lower() == "true"
+# Vercel overwrites X-Forwarded-For itself, so it is trusted there by default.
+IS_VERCEL = os.getenv("VERCEL") == "1"
+TRUST_PROXY = os.getenv("TRUST_PROXY", "true" if IS_VERCEL else "false").strip().lower() == "true"
+# Structuring the resume costs an extra Groq call per server start and the site does not
+# need it (the chat reads the raw resume text). Enable only if you use /api/profile.
+PARSE_RESUME = os.getenv("PARSE_RESUME", "false").strip().lower() == "true"
 
 # Abuse protection for the paid LLM endpoint.
 CHAT_LIMIT_PER_MINUTE = _env_int("CHAT_LIMIT_PER_MINUTE", 6)
@@ -226,7 +235,7 @@ Rules:
 # GitHub project loading
 # -----------------------------------------------------------------------------
 
-async def fetch_github_projects() -> list[dict]:
+def fetch_github_projects() -> list[dict]:
     if not GITHUB_USERNAME:
         logger.warning("GITHUB_USERNAME is not set; GitHub project cards will be empty.")
         return []
@@ -243,12 +252,12 @@ async def fetch_github_projects() -> list[dict]:
     base_params = {"type": "owner", "sort": "updated", "per_page": 100}
 
     try:
-        async with httpx.AsyncClient(timeout=10.0, headers=headers) as http:
+        with httpx.Client(timeout=8.0, headers=headers) as http:
             payload = []
             # GitHub returns at most 100 repositories per page. Follow pagination
             # so larger portfolios are not silently cut off.
             for page in range(1, 6):
-                response = await http.get(url, params={**base_params, "page": page})
+                response = http.get(url, params={**base_params, "page": page})
                 response.raise_for_status()
                 page_items = response.json()
                 if not page_items:
@@ -285,28 +294,45 @@ async def fetch_github_projects() -> list[dict]:
 
 
 # -----------------------------------------------------------------------------
-# App lifecycle: load resume once and GitHub projects once
+# Context loading: once per server process, on startup or on the first request.
+# Serverless hosts (Vercel) may not run startup hooks, so every route calls
+# ensure_loaded(); it does the work only once per instance.
 # -----------------------------------------------------------------------------
+
+_load_lock = threading.Lock()
+_loaded = False
+
+
+def ensure_loaded() -> None:
+    global RESUME_TEXT, RESUME_PROFILE, GITHUB_PROJECTS, _loaded
+    if _loaded:
+        return
+    with _load_lock:
+        if _loaded:
+            return
+        logger.info("Reading resume from: %s", RESUME_PATH)
+        try:
+            RESUME_TEXT = read_pdf(RESUME_PATH)
+        except Exception:
+            logger.exception("Could not load resume. Check RESUME_PATH.")
+            RESUME_TEXT = ""
+            return  # retry on the next request; the PDF read is cheap
+
+        if PARSE_RESUME:
+            try:
+                RESUME_PROFILE = parse_resume(RESUME_TEXT)
+                logger.info("Resume parsed and cached successfully.")
+            except Exception:
+                logger.exception("Resume parsing failed. Chat will use extracted PDF text.")
+                RESUME_PROFILE = None
+
+        GITHUB_PROJECTS = fetch_github_projects()
+        _loaded = True
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global RESUME_TEXT, RESUME_PROFILE, GITHUB_PROJECTS
-
-    logger.info("Reading resume from: %s", RESUME_PATH)
-    try:
-        RESUME_TEXT = await asyncio.to_thread(read_pdf, RESUME_PATH)
-        try:
-            RESUME_PROFILE = await asyncio.to_thread(parse_resume, RESUME_TEXT)
-            logger.info("Resume parsed and cached successfully.")
-        except Exception:
-            logger.exception("Resume parsing failed. Chat will use extracted PDF text as fallback context.")
-            RESUME_PROFILE = None
-    except Exception:
-        logger.exception("Could not load resume. Check RESUME_PATH in the .env file.")
-        RESUME_TEXT = ""
-        RESUME_PROFILE = None
-
-    GITHUB_PROJECTS = await fetch_github_projects()
+    await asyncio.to_thread(ensure_loaded)
     yield
 
 
@@ -434,11 +460,13 @@ def stream_candidate_answer(request: ChatRequest) -> Iterator[str]:
 @app.get("/api/health")
 def health():
     # Kept minimal: no model names, usernames or paths for anonymous callers.
+    ensure_loaded()
     return {"status": "ok", "resume_loaded": bool(RESUME_TEXT)}
 
 
 @app.get("/api/profile")
 def get_profile():
+    ensure_loaded()
     if RESUME_PROFILE is None:
         return {
             "name": None,
@@ -456,6 +484,7 @@ def get_profile():
 
 @app.get("/api/projects")
 def get_projects():
+    ensure_loaded()
     return {
         "username": GITHUB_USERNAME or None,
         "profile_url": f"https://github.com/{GITHUB_USERNAME}" if GITHUB_USERNAME else None,
@@ -465,6 +494,7 @@ def get_projects():
 
 @app.post("/api/chat")
 def chat(payload: ChatRequest, request: Request):
+    ensure_loaded()
     if not RESUME_TEXT:
         logger.error("Chat requested but the resume is not loaded. Check RESUME_PATH.")
         raise HTTPException(status_code=503, detail="The assistant is temporarily unavailable.")

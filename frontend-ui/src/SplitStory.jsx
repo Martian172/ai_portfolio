@@ -631,7 +631,7 @@ export function SplitFinale({ email, onOpenChat, linkedin, onLinkedIn, resumeUrl
               That needs <em>shipping?</em>
             </p>
             <div className={`neon text-mono ${lit ? "is-lit" : ""}`} aria-hidden="true">
-              Open to work · Hire me
+              Open to work
             </div>
           </div>
         </div>

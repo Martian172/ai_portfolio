@@ -617,7 +617,6 @@ export default function App() {
               <div className="inventory">
                 <div className="inventory__head text-mono">
                   <span>Inventory</span>
-                  <span className="dim">{inventory.length} / 8 slots</span>
                 </div>
                 <ul className="inventory__slots">
                   {inventory.map((item) => (
@@ -640,9 +639,6 @@ export default function App() {
                         <span className="slot__rarity text-mono">{item.rarity}</span>
                       </a>
                     </li>
-                  ))}
-                  {Array.from({ length: 8 - inventory.length }).map((_, i) => (
-                    <li key={`empty-${i}`} className="slot slot--empty" aria-hidden="true" />
                   ))}
                 </ul>
               </div>

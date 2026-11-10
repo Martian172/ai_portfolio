@@ -34,10 +34,6 @@
 }
 .slot--legendary { --rare: var(--amber); border-color: color-mix(in srgb, var(--amber) 45%, var(--night-3)); }
 .slot--rare { --rare: var(--red); }
-.slot--empty {
-  min-height: 3.2rem; border-style: dashed; box-shadow: none;
-  background: repeating-linear-gradient(135deg, transparent 0 6px, rgba(244, 241, 234, 0.035) 6px 7px);
-}
 a.slot:hover, a.slot:focus-visible {
   transform: translateY(-4px); border-color: var(--rare);
   box-shadow: inset 0 -3px 0 var(--rare), 0 14px 30px -14px var(--rare);
@@ -57,7 +53,6 @@ a.slot:hover, a.slot:focus-visible {
 }
 @media (max-width: 520px) {
   .inventory__slots { grid-template-columns: repeat(2, 1fr); }
-  .slot--empty { display: none; }
 }
 
 .split__chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.45rem; }

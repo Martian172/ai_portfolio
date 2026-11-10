@@ -1,150 +1,279 @@
-# HireMe AI — portfolio + streaming recruiter chat
+<div align="center">
 
-This starter contains a FastAPI backend and a React/Vite frontend. The UI loads the parsed resume profile and public GitHub repository metadata, then streams AI answers from Groq into the chat panel.
+<img src="frontend-ui/public/favicon.svg" width="72" alt="Ansh Singh logo" />
 
-## Folder layout
+# HireMe AI · Ansh Singh's Portfolio
+
+**An interactive, game-themed portfolio with a resume-grounded AI twin that recruiters can interview.**
+
+*Model vs Product: every model needs a product. This site is both.*
+
+[![Live site](https://img.shields.io/badge/Live_site-anshsingh--ai.vercel.app-ea1d0f?style=for-the-badge&logo=vercel&logoColor=white)](https://anshsingh-ai.vercel.app)
+[![Contact](https://img.shields.io/badge/Send_a_message-%2Fcontact-ffb547?style=for-the-badge&logoColor=black)](https://anshsingh-ai.vercel.app/contact/)
+
+![React](https://img.shields.io/badge/React_19-20232a?style=flat-square&logo=react&logoColor=61dafb)
+![Vite](https://img.shields.io/badge/Vite_8-646cff?style=flat-square&logo=vite&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
+![Python](https://img.shields.io/badge/Python_3.13-3776ab?style=flat-square&logo=python&logoColor=white)
+![Groq](https://img.shields.io/badge/Groq_LLM-f55036?style=flat-square)
+![Resend](https://img.shields.io/badge/Resend-000000?style=flat-square&logo=resend&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
+
+**[🔗 Live demo](https://anshsingh-ai.vercel.app)** · **[✉️ Contact page](https://anshsingh-ai.vercel.app/contact/)** · **[💼 LinkedIn](https://www.linkedin.com/in/anshz)** · **[📄 Resume](https://anshsingh-ai.vercel.app/Ansh_Singh_Resume.pdf)**
+
+<br />
+
+<img src="docs/screenshots/02-split-open.jpg" alt="Split hero: the left half is the model (notebook, GPU, dataset), the right half is the product (terminal, servers), with a cyberpunk mascot rising in the middle" width="100%" />
+
+</div>
+
+---
+
+## Table of contents
+
+- [About](#about)
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [How it works](#how-it-works)
+- [Tech stack](#tech-stack)
+- [Project structure](#project-structure)
+- [Run it locally](#run-it-locally)
+- [Environment variables](#environment-variables)
+- [Deploying to Vercel](#deploying-to-vercel)
+- [Security](#security)
+- [Author](#author)
+
+---
+
+## About
+
+Most portfolios are a list of links. This one is a small game you scroll through, built around one idea: **a model is only half the job, the other half is shipping it.**
+
+- **Scroll the story.** The page splits into a *Model* half and a *Product* half, a mascot rises from the middle, and each chapter (the street, the factory, the player card, missions) shows real work.
+- **Interview the AI twin.** A streaming chat assistant answers recruiters' questions using only my resume and public GitHub data, and says when it doesn't know something instead of inventing it.
+- **Get in touch directly.** A contact page lets anyone pick a "mission" and send a message that lands in my inbox.
+
+Everything runs on one Vercel project: a static React site on the global CDN and a FastAPI backend as serverless functions, on the same domain.
+
+---
+
+## Features
+
+| | Feature | Details |
+|---|---|---|
+| 🎬 | **Scroll-scrubbed story** | "Model vs Product" split hero: halves slide apart, the mascot rises, the name types itself, then everything closes again |
+| 🏪 | **The street** | Projects as shop fronts on a sideways-scrolling street; doors swing open to live demos and code |
+| 🏭 | **The factory** | Live GitHub repos arrive as crates on a conveyor belt and get stamped "Shipped" |
+| 🃏 | **Player One card** | Flippable stats / quest-log card with dot-matrix readouts, plus an RPG-style **inventory** (resume download, LinkedIn, GitHub, email) |
+| 🎯 | **Missions board** | Skill areas with loadouts and proof of work; picking one asks the AI about it |
+| 🤖 | **AI twin chat** | Streams answers token by token from Groq (`gpt-oss-120b`), grounded in the resume and GitHub metadata; available as a terminal section and a floating chat drawer |
+| ✉️ | **Contact page** | Terminal intro, "Choose your mission" cards that write the first line of the message, a conversational form, and delivery to my inbox via Resend |
+| 🏆 | **Achievements** | 8 arcade achievements with toasts and a trophy room, including a hidden **Konami code** (↑↑↓↓←→←→BA) that turns on CRT mode |
+| 🐾 | **Bit, the pet** | A draggable little robot that reacts to petting and comments on each chapter |
+| 🔊 | **Synth sound kit** | Retro sound effects generated with the Web Audio API (no audio files), mutable from the header |
+| 📱 | **Responsive** | Tested at 320 px to 1440 px+; respects `prefers-reduced-motion` |
+
+---
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/03-street.jpg" alt="The street: projects as shop fronts" /><br /><sub><b>The street</b>: each project is a shop with a live demo in the window</sub></td>
+    <td width="50%"><img src="docs/screenshots/04-factory.jpg" alt="The factory: GitHub repos on a conveyor belt" /><br /><sub><b>The factory</b>: live GitHub repos stamped on a conveyor</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/05-player.jpg" alt="Player One card and inventory" /><br /><sub><b>Under the hood</b>: Player One card and inventory</sub></td>
+    <td><img src="docs/screenshots/06-missions.jpg" alt="Missions board" /><br /><sub><b>Missions</b>: skill areas, loadouts and proof of work</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/07-ai-chat.jpg" alt="AI twin answering a recruiter question" /><br /><sub><b>AI twin</b>: a real streamed answer, grounded in the resume</sub></td>
+    <td><img src="docs/screenshots/08-finale.jpg" alt="Finale with Open to work neon sign" /><br /><sub><b>Finale</b>: "Open to work" neon, resume and LinkedIn</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/09-contact.jpg" alt="Contact page hero with terminal" /><br /><sub><b>Contact</b>: terminal intro</sub></td>
+    <td><img src="docs/screenshots/10-contact-missions.jpg" alt="Contact page mission cards" /><br /><sub><b>Contact</b>: choose a mission, it writes the first line</sub></td>
+  </tr>
+</table>
+
+<p align="center">
+  <img src="docs/screenshots/m1-player.jpg" alt="Mobile: player section and inventory" width="260" />
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/m2-contact.jpg" alt="Mobile: contact page" width="260" />
+  <br /><sub>On a phone (390 px)</sub>
+</p>
+
+---
+
+## How it works
+
+```mermaid
+flowchart LR
+    V([Visitor]) -->|HTTPS| E[Vercel edge]
+    E -->|"/ and /contact/"| W["web service<br/>React + Vite static site<br/>(CDN)"]
+    E -->|"/api/*"| A["api service<br/>FastAPI (Python 3.13)<br/>serverless function"]
+    W -. "fetch /api/chat, /api/contact<br/>(same domain, no CORS)" .-> A
+    W -->|"repo list in the browser"| GH[(GitHub API)]
+    A -->|"streamed completion"| G[Groq LLM]
+    A -->|"public repo metadata"| GH
+    A -->|"plain-text email"| R[Resend] --> M[(My inbox)]
+    A -->|"reads once per instance"| P[/resume.pdf/]
+```
+
+**AI chat (`POST /api/chat`)**
+1. On the first request, the backend reads the resume PDF and fetches public GitHub repo metadata, then caches both for that instance.
+2. Each question plus a short history window is sent to Groq with a strict system prompt: answer only from the resume and repo data, speak in first person, never invent metrics or details, and treat user text as untrusted.
+3. Groq streams tokens back; FastAPI forwards them as plain text; React reads `response.body` and renders each chunk as Markdown as it arrives.
+
+**Contact form (`POST /api/contact`)**
+1. The page validates the fields, then posts name, email, message and mission.
+2. The backend validates again, checks a hidden honeypot field and per-visitor rate limits, then sends a plain-text email through Resend with *Reply-To* set to the visitor.
+
+---
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| **Frontend** | React 19, Vite 8, plain CSS (custom design system), `react-markdown`, `lucide-react`, `react-icons` |
+| **Typography** | Chakra Petch (display), IBM Plex Sans (text), IBM Plex Mono (labels / terminal), Doto (dot-matrix readouts) |
+| **Backend** | FastAPI, Pydantic v2, `httpx`, `pypdf`, Groq Python SDK, managed with `uv` |
+| **AI** | Groq · `openai/gpt-oss-120b` (configurable), streaming completions |
+| **Email** | Resend HTTP API |
+| **Hosting** | Vercel (Services): static site on the CDN + Python serverless functions |
+
+---
+
+## Project structure
 
 ```text
-hireme_ai/
-├── .env
-├── backend/
-│   └── main.py
-└── frontend-ui/
-    ├── .env
-    ├── package.json
-    └── src/
-        ├── App.jsx
-        ├── index.css
-        └── main.jsx
+.
+├── vercel.json              # Two services on one domain: web (/) and api (/api/*)
+├── backend/                 # FastAPI app (deployed as the "api" service)
+│   ├── main.py              # Chat, contact, health; validation, rate limits, security headers
+│   ├── resume.pdf           # Resume the AI reads
+│   ├── pyproject.toml       # Python dependencies
+│   └── uv.lock
+├── frontend-ui/             # React + Vite site (deployed as the "web" service)
+│   ├── index.html           # Portfolio page
+│   ├── contact/index.html   # Contact page
+│   ├── vite.config.js       # Multi-page build, CSP injection, /api dev proxy
+│   ├── public/              # Resume PDF, favicon, project screenshots
+│   └── src/
+│       ├── App.jsx          # Portfolio page: chapters, chat, inventory
+│       ├── ContactPage.jsx  # Contact page
+│       ├── SplitStory.jsx   # Scroll-scrubbed hero and finale
+│       ├── Street.jsx       # Projects as shop fronts
+│       ├── Factory.jsx      # GitHub repos on a conveyor
+│       ├── ChatWidget.jsx   # Floating AI chat drawer
+│       ├── Buddy.jsx        # Bit, the draggable pet
+│       ├── Achievements.jsx # Achievements, trophy room, Konami / CRT mode
+│       ├── shared.jsx       # Shared config, cursor, clock, sound toggle, footer
+│       ├── sound.js         # Web Audio sound kit
+│       └── *.css            # Design system and page styles
+├── docs/screenshots/        # Images used in this README
+├── .env.example             # Template for local secrets (copy to .env)
+└── pyproject.toml           # Root Python env for running the backend locally
 ```
 
-Copy `backend/main.py` into your existing `hireme_ai/backend/main.py`. Copy the `frontend-ui` folder into `hireme_ai`. Copy `.env.example` to `hireme_ai/.env` and fill in your own values. Do not overwrite your existing `.env` blindly; add or update the variables instead.
+---
 
-## 1. Backend setup (PowerShell)
+## Run it locally
 
-Open a terminal in the `hireme_ai` project root (the folder that contains `backend`). Run:
+**Requirements:** Python 3.13 with [uv](https://docs.astral.sh/uv/), Node.js 20+, a free [Groq API key](https://console.groq.com/keys) and, for the contact form, a free [Resend API key](https://resend.com/api-keys).
 
-```powershell
-uv add fastapi uvicorn groq python-dotenv pydantic pypdf httpx
-```
+```bash
+# 1. Clone
+git clone https://github.com/Martian172/ai_portfolio.git
+cd ai_portfolio
 
-Create/update `.env` in the `hireme_ai` root:
+# 2. Secrets: copy the template and fill in your keys (never commit .env)
+cp .env.example .env
 
-```env
-GROQ_API_KEY=your_real_groq_key
-GROQ_MODEL=openai/gpt-oss-120b
-GITHUB_USERNAME=your_github_username
-GITHUB_TOKEN=
-RESUME_PATH=../day4/resumes/ansh.pdf
-```
-
-`GITHUB_TOKEN` is optional. `GITHUB_USERNAME` must be the GitHub handle only, not the whole profile URL. Set `RESUME_PATH` to the actual PDF location, relative to `hireme_ai`, or use an absolute Windows path.
-
-Start the backend from the `hireme_ai` root:
-
-```powershell
+# 3. Backend (http://127.0.0.1:8000)
+uv sync
 uv run uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
-```
 
-Check these endpoints:
-
-- http://127.0.0.1:8000/api/health
-- http://127.0.0.1:8000/api/profile
-- http://127.0.0.1:8000/api/projects
-- http://127.0.0.1:8000/docs (only when `ENABLE_DOCS=true` in `.env`; off by default)
-
-The PDF is extracted and parsed once at backend startup, not on every chat message. Restart the backend after changing the resume or `.env` values.
-
-## 2. Frontend setup
-
-The existing `frontend` folder in the screenshot appears to contain Python-related files. To avoid overwriting them, this starter uses a separate folder named `frontend-ui`.
-
-Open a second VS Code terminal:
-
-```powershell
+# 4. Frontend, in a second terminal (http://127.0.0.1:5173)
 cd frontend-ui
-```
-
-Create `frontend-ui/.env` with:
-
-```env
-VITE_API_URL=http://127.0.0.1:8000
-```
-
-Then install and run:
-
-```powershell
 npm install
 npm run dev
 ```
 
-Open the local URL printed by Vite, usually http://localhost:5173.
+Open http://127.0.0.1:5173. The Vite dev server forwards `/api` to the backend on port 8000, so it behaves exactly like production. The contact page is at http://127.0.0.1:5173/contact/.
 
-If you are copying this starter rather than using the supplied folder, the files in `frontend-ui` are a Vite React app. Install a current Node.js version supported by Vite before running npm commands.
+> `--reload` restarts the backend when Python files change. Changes to `.env` need a manual restart.
 
-## 3. How streaming works
+---
 
-1. FastAPI reads the PDF and asks Groq to structure it once during startup.
-2. FastAPI fetches the user's public GitHub repositories once during startup.
-3. The React UI loads `/api/profile` and `/api/projects`.
-4. The chat sends the new question plus a short history window to `/api/chat`.
-5. Groq returns streamed chunks; FastAPI forwards them as plain text; React reads `response.body` and appends each chunk immediately.
+## Environment variables
 
-## 4. Accuracy notes
+All secrets live **only on the backend**: in `.env` locally and in Vercel's *Environment Variables* in production. Nothing secret is ever bundled into the frontend.
 
-The GitHub cards show real public repository metadata (description, language, topics, stars and link). Repository metadata alone does not prove the exact implementation or your personal contribution. Keep repository descriptions and README files detailed, and make sure your resume accurately describes your role, tools and outcomes. The assistant is instructed not to invent implementation details that are absent from its context.
+| Variable | Required | Purpose |
+|---|---|---|
+| `GROQ_API_KEY` | ✅ | Powers the AI chat |
+| `GROQ_MODEL` | | Model name (default `openai/gpt-oss-120b`) |
+| `RESEND_API_KEY` | for contact | Sends contact-form messages |
+| `CONTACT_TO_EMAIL` | for contact | Inbox that receives messages (with Resend's test sender, the address you signed up with) |
+| `CONTACT_FROM_EMAIL` | | Sender after verifying your own domain in Resend |
+| `GITHUB_USERNAME` | | Whose public repos the AI knows about (default `martian172`) |
+| `GITHUB_TOKEN` | | Optional read-only token to avoid GitHub's anonymous rate limit |
+| `ALLOWED_ORIGINS` | | Extra origins allowed to call the API from a browser (not needed on one domain) |
+| `CHAT_LIMIT_PER_MINUTE` / `CHAT_LIMIT_PER_DAY` / `CHAT_GLOBAL_LIMIT_PER_DAY` | | Chat abuse limits (defaults 6 / 60 / 1500) |
+| `CONTACT_LIMIT_PER_HOUR` / `CONTACT_LIMIT_PER_DAY` / `CONTACT_GLOBAL_LIMIT_PER_DAY` | | Contact limits (defaults 3 / 6 / 100) |
+| `ENABLE_DOCS` | | `true` shows `/docs` locally; keep off in production |
 
-## 5. Deploying to Vercel
+See [`.env.example`](.env.example) for a commented template.
 
-The site and the API deploy together as one Vercel project using [Services](https://vercel.com/docs/services) (`vercel.json`):
+---
 
-- `frontend-ui/` is built with Vite and served from Vercel's CDN at `/`.
-- `backend/` runs FastAPI (`main:app`) as a Python function at `/api/*`, on the same domain, so no CORS setup is needed.
+## Deploying to Vercel
 
-Steps:
-
-1. On https://vercel.com/new, import this GitHub repository. Keep the root directory as the repo root; `vercel.json` defines both services.
-2. In **Settings → Environment Variables**, add `GROQ_API_KEY` (required) and optionally `GITHUB_TOKEN` (a fine-grained token with public read-only access, which avoids GitHub's anonymous rate limit).
-   For the contact form, also add `RESEND_API_KEY` and `CONTACT_TO_EMAIL` (see below).
+1. Import the repo at [vercel.com/new](https://vercel.com/new), keep **Root Directory** at the repo root, and choose the **Services** preset. `vercel.json` defines both services.
+2. Add `GROQ_API_KEY`, `RESEND_API_KEY` and `CONTACT_TO_EMAIL` (plus optional `GITHUB_TOKEN`) under **Settings → Environment Variables**.
 3. Deploy. Every push to `main` redeploys automatically.
 
-On Vercel, `TRUST_PROXY` defaults to on so rate limits use the visitor's real IP. The resume the AI reads is `backend/resume.pdf`; the downloadable copy is `frontend-ui/public/Ansh_Singh_Resume.pdf`.
+On Vercel the backend loads the resume and repo list on its first request (serverless-friendly), trusts Vercel's forwarded IP header for rate limiting, and streams chat responses.
 
-Local development mirrors production: `npm run dev` proxies `/api` to the backend on `http://127.0.0.1:8000`.
+---
 
-### Contact page (`/contact/`)
+## Security
 
-Visitors pick a mission and send a message; `POST /api/contact` emails it to you through [Resend](https://resend.com) (free tier), with *Reply-To* set to the visitor so you can answer from your inbox.
+| Protection | Where |
+|---|---|
+| API keys only in server-side environment variables; `.env` is git-ignored | backend |
+| Per-visitor and global rate limits on chat and contact | backend |
+| Strict input validation (lengths, email format, no line breaks or HTML in names, unknown fields rejected), 64 KB body cap | backend |
+| Honeypot field silently drops contact-form bots; emails are plain text with *Reply-To* set to the visitor | backend |
+| Prompt-injection guard in the system prompt; phone number never returned by the API | backend |
+| `/docs` and `/openapi.json` hidden; minimal `/api/health` | backend |
+| Content Security Policy (own scripts only; connects only to GitHub's API and the same-origin API) | frontend build |
+| `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, HSTS | Vercel headers + backend |
+| AI replies rendered with `react-markdown`: no raw HTML, unsafe links stripped | frontend |
 
-1. Sign up at resend.com and create an API key.
-2. Set `RESEND_API_KEY` and `CONTACT_TO_EMAIL` (the address you signed up with) in `.env` locally and in Vercel's environment variables.
-3. Optional: verify your own domain in Resend and set `CONTACT_FROM_EMAIL` (e.g. `Portfolio <hello@yourdomain.com>`) so mail comes from your domain and can go to any inbox.
+The rate limiter is in memory, so each serverless instance counts separately; a spending limit in the Groq console provides the hard ceiling.
 
-Protections: strict field validation (no line breaks or HTML in names, real email format, 15–4000 characters), a hidden honeypot field that silently drops bots, 3 messages per hour and 6 per day per visitor plus a global daily cap, plain-text email only, and the API key never leaves the server. If the keys are missing, the form shows a friendly "email me directly" message.
+---
 
-## 6. Security
+## Author
 
-**Secrets stay on the server.** `GROQ_API_KEY` and `GITHUB_TOKEN` are read only by the FastAPI backend from `.env` (locally) or the hosting platform's environment variables (in production). The browser never sees them: it only talks to `/api/chat`, and the backend calls Groq.
+<table>
+  <tr>
+    <td>
 
-- Never put a key or token in a `VITE_` variable, `frontend-ui/.env` or React source. Vite bakes every `VITE_` value into public JavaScript.
-- `.env` and `.env.*` are git-ignored; only the placeholder `.env.example` files are committed.
-- On a host such as Vercel or Render, add the keys in the dashboard's *Environment Variables* settings, never in code.
-- If a key is ever exposed (committed, pasted, screenshotted), revoke it at https://console.groq.com/keys and create a new one.
+**Ansh Singh** · AI Engineer · New Delhi, India
 
-**Built-in protections**
+B.Tech in Industrial IoT (GGSIPU, 2026). AI Engineer intern at **Gumlabs** (Twik AI Voice Keyboard, 400K+ users) and Data Analyst intern at **IBM**. I build ML models and the products around them: APIs, deployment and monitoring.
 
-| Protection | Where | Setting |
-| --- | --- | --- |
-| Contact form: validation, honeypot, 3/hour + 6/day per IP, plain-text email | backend | `CONTACT_LIMIT_*` |
-| Per-IP chat rate limit (default 6/min, 60/day) and global daily cap (1500) | backend | `CHAT_LIMIT_PER_MINUTE`, `CHAT_LIMIT_PER_DAY`, `CHAT_GLOBAL_LIMIT_PER_DAY` |
-| CORS: only your site may call the API from a browser | backend | `ALLOWED_ORIGINS` (set to your deployed frontend URL) |
-| Real client IP behind a proxy, ignored otherwise so it can't be spoofed | backend | `TRUST_PROXY=true` on Vercel/Render |
-| Request size cap (64 KB), strict input validation, unknown fields rejected | backend | — |
-| `/docs` and `/openapi.json` hidden | backend | `ENABLE_DOCS=true` to show locally |
-| Security headers (`nosniff`, `DENY` framing, `no-referrer`) | backend | — |
-| Phone number never returned by `/api/profile`; minimal `/api/health` | backend | — |
-| Prompt-injection guard in the system prompt | backend | — |
-| Content Security Policy (own scripts only; connects only to GitHub API + your backend) | frontend build | derived from `VITE_API_URL` |
-| AI replies rendered with `react-markdown` (no raw HTML, unsafe links stripped) | frontend | — |
+[🌐 Portfolio](https://anshsingh-ai.vercel.app) · [💼 LinkedIn](https://www.linkedin.com/in/anshz) · [🐙 GitHub](https://github.com/Martian172) · [✉️ singhanshz172@gmail.com](mailto:singhanshz172@gmail.com)
 
-The rate limiter is in memory, so each server instance counts separately. For a hard ceiling on cost, also set a spending limit in the Groq console.
+**Open to full-time AI / ML roles.** The fastest way to reach me is the [contact page](https://anshsingh-ai.vercel.app/contact/).
+
+  </td>
+  </tr>
+</table>
+
+<div align="center">
+<sub>Built with FastAPI, Groq and React · Designed and developed by Ansh Singh</sub>
+</div>

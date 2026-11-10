@@ -1,7 +1,7 @@
 [project]
 name = "hireme-ai-portfolio-starter"
 version = "0.1.0"
-description = "Add your description here"
+description = "HireMe AI: FastAPI backend for Ansh Singh's portfolio (resume-grounded AI chat and contact form)"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

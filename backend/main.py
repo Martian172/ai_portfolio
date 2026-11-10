@@ -29,7 +29,7 @@ load_dotenv(ROOT_DIR / ".env")
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
 GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b").strip()
-GITHUB_USERNAME = os.getenv("GITHUB_USERNAME", "").strip()
+GITHUB_USERNAME = os.getenv("GITHUB_USERNAME", "martian172").strip()
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "").strip()  # Optional; useful for higher GitHub API limits.
 
 BACKEND_DIR = Path(__file__).resolve().parent

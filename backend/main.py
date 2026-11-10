@@ -71,6 +71,15 @@ CHAT_LIMIT_PER_DAY = _env_int("CHAT_LIMIT_PER_DAY", 60)
 CHAT_GLOBAL_LIMIT_PER_DAY = _env_int("CHAT_GLOBAL_LIMIT_PER_DAY", 1500)
 MAX_BODY_BYTES = 64 * 1024
 
+# Contact form delivery via Resend (https://resend.com). The key stays on the server.
+# Without a verified domain, Resend's test sender can only deliver to your own account email.
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
+CONTACT_TO_EMAIL = os.getenv("CONTACT_TO_EMAIL", "").strip()
+CONTACT_FROM_EMAIL = os.getenv("CONTACT_FROM_EMAIL", "Portfolio Contact <onboarding@resend.dev>").strip()
+CONTACT_LIMIT_PER_HOUR = _env_int("CONTACT_LIMIT_PER_HOUR", 3)
+CONTACT_LIMIT_PER_DAY = _env_int("CONTACT_LIMIT_PER_DAY", 6)
+CONTACT_GLOBAL_LIMIT_PER_DAY = _env_int("CONTACT_GLOBAL_LIMIT_PER_DAY", 100)
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("hireme-ai")
 
@@ -131,9 +140,11 @@ class ChatRequest(BaseModel):
 
 class RateLimiter:
     """Sliding-window limits. In-memory, so each server instance keeps its own counts;
-    pair it with a spending limit in the Groq console for a hard ceiling."""
+    pair it with a spending limit in the Groq console for a hard ceiling.
+    `window` is the short window in seconds (60 = per minute, 3600 = per hour)."""
 
-    def __init__(self, per_minute: int, per_day: int, global_per_day: int):
+    def __init__(self, per_minute: int, per_day: int, global_per_day: int, window: float = 60.0):
+        self.window = window
         self.per_minute = per_minute
         self.per_day = per_day
         self.global_per_day = global_per_day
@@ -144,7 +155,7 @@ class RateLimiter:
     def check(self, key: str) -> int | None:
         """Record a request. Returns None if allowed, else seconds until retry."""
         now = time.monotonic()
-        day, minute = 86400.0, 60.0
+        day, minute = 86400.0, self.window
         with self._lock:
             while self._global and now - self._global[0] > day:
                 self._global.popleft()
@@ -168,6 +179,56 @@ class RateLimiter:
 
 
 chat_limiter = RateLimiter(CHAT_LIMIT_PER_MINUTE, CHAT_LIMIT_PER_DAY, CHAT_GLOBAL_LIMIT_PER_DAY)
+contact_limiter = RateLimiter(CONTACT_LIMIT_PER_HOUR, CONTACT_LIMIT_PER_DAY, CONTACT_GLOBAL_LIMIT_PER_DAY, window=3600.0)
+
+
+# -----------------------------------------------------------------------------
+# Contact form
+# -----------------------------------------------------------------------------
+
+EMAIL_PATTERN = r"^[A-Za-z0-9._%+\-]{1,64}@[A-Za-z0-9.\-]{1,190}\.[A-Za-z]{2,24}$"
+CONTACT_MISSIONS = ("Full-time role", "Freelance project", "MLOps & deployment", "Just saying hi")
+
+
+class ContactRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+
+    name: str = Field(min_length=2, max_length=80, pattern=r"^[^\r\n<>]+$")
+    email: str = Field(max_length=254, pattern=EMAIL_PATTERN)
+    message: str = Field(min_length=15, max_length=4000)
+    mission: Literal[CONTACT_MISSIONS] | None = None  # type: ignore[valid-type]
+    # Honeypot: hidden from people, filled in by bots. Any value means "drop silently".
+    website: str = Field(default="", max_length=200)
+
+
+def send_contact_email(payload: ContactRequest, ip: str) -> None:
+    subject = f"Portfolio message from {payload.name}"
+    if payload.mission:
+        subject += f" · {payload.mission}"
+    text = (
+        f"New message from your portfolio contact form\n\n"
+        f"Name:    {payload.name}\n"
+        f"Email:   {payload.email}\n"
+        f"Mission: {payload.mission or '-'}\n\n"
+        f"{payload.message}\n\n"
+        f"-- \nReply to this email to answer {payload.name} directly."
+    )
+    response = httpx.post(
+        "https://api.resend.com/emails",
+        headers={"Authorization": f"Bearer {RESEND_API_KEY}", "Content-Type": "application/json"},
+        json={
+            "from": CONTACT_FROM_EMAIL,
+            "to": [CONTACT_TO_EMAIL],
+            "reply_to": payload.email,
+            "subject": subject[:180],
+            "text": text,  # plain text only: nothing the visitor typed is rendered as HTML
+        },
+        timeout=10.0,
+    )
+    if response.status_code >= 300:
+        logger.error("Resend rejected the contact email: %s %s", response.status_code, response.text[:300])
+        raise RuntimeError("email provider error")
+    logger.info("Contact message delivered (mission=%s)", payload.mission or "-")
 
 
 def client_ip(request: Request) -> str:
@@ -490,6 +551,33 @@ def get_projects():
         "profile_url": f"https://github.com/{GITHUB_USERNAME}" if GITHUB_USERNAME else None,
         "projects": GITHUB_PROJECTS,
     }
+
+
+@app.post("/api/contact")
+def contact(payload: ContactRequest, request: Request):
+    if payload.website:
+        # A bot filled the hidden field: pretend it worked and send nothing.
+        logger.info("Contact honeypot triggered; message dropped.")
+        return {"ok": True}
+
+    if not (RESEND_API_KEY and CONTACT_TO_EMAIL):
+        logger.error("Contact form used but RESEND_API_KEY / CONTACT_TO_EMAIL are not set.")
+        raise HTTPException(status_code=503, detail="The contact form is not available right now. Please email me directly.")
+
+    retry_after = contact_limiter.check(client_ip(request))
+    if retry_after is not None:
+        raise HTTPException(
+            status_code=429,
+            detail="You've sent a few messages already. Please wait a while or email me directly.",
+            headers={"Retry-After": str(retry_after)},
+        )
+
+    try:
+        send_contact_email(payload, client_ip(request))
+    except Exception:
+        logger.exception("Contact email failed.")
+        raise HTTPException(status_code=502, detail="Your message couldn't be delivered. Please email me directly.")
+    return {"ok": True}
 
 
 @app.post("/api/chat")

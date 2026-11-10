@@ -105,11 +105,22 @@ Steps:
 
 1. On https://vercel.com/new, import this GitHub repository. Keep the root directory as the repo root; `vercel.json` defines both services.
 2. In **Settings → Environment Variables**, add `GROQ_API_KEY` (required) and optionally `GITHUB_TOKEN` (a fine-grained token with public read-only access, which avoids GitHub's anonymous rate limit).
+   For the contact form, also add `RESEND_API_KEY` and `CONTACT_TO_EMAIL` (see below).
 3. Deploy. Every push to `main` redeploys automatically.
 
 On Vercel, `TRUST_PROXY` defaults to on so rate limits use the visitor's real IP. The resume the AI reads is `backend/resume.pdf`; the downloadable copy is `frontend-ui/public/Ansh_Singh_Resume.pdf`.
 
 Local development mirrors production: `npm run dev` proxies `/api` to the backend on `http://127.0.0.1:8000`.
+
+### Contact page (`/contact/`)
+
+Visitors pick a mission and send a message; `POST /api/contact` emails it to you through [Resend](https://resend.com) (free tier), with *Reply-To* set to the visitor so you can answer from your inbox.
+
+1. Sign up at resend.com and create an API key.
+2. Set `RESEND_API_KEY` and `CONTACT_TO_EMAIL` (the address you signed up with) in `.env` locally and in Vercel's environment variables.
+3. Optional: verify your own domain in Resend and set `CONTACT_FROM_EMAIL` (e.g. `Portfolio <hello@yourdomain.com>`) so mail comes from your domain and can go to any inbox.
+
+Protections: strict field validation (no line breaks or HTML in names, real email format, 15–4000 characters), a hidden honeypot field that silently drops bots, 3 messages per hour and 6 per day per visitor plus a global daily cap, plain-text email only, and the API key never leaves the server. If the keys are missing, the form shows a friendly "email me directly" message.
 
 ## 6. Security
 
@@ -124,6 +135,7 @@ Local development mirrors production: `npm run dev` proxies `/api` to the backen
 
 | Protection | Where | Setting |
 | --- | --- | --- |
+| Contact form: validation, honeypot, 3/hour + 6/day per IP, plain-text email | backend | `CONTACT_LIMIT_*` |
 | Per-IP chat rate limit (default 6/min, 60/day) and global daily cap (1500) | backend | `CHAT_LIMIT_PER_MINUTE`, `CHAT_LIMIT_PER_DAY`, `CHAT_GLOBAL_LIMIT_PER_DAY` |
 | CORS: only your site may call the API from a browser | backend | `ALLOWED_ORIGINS` (set to your deployed frontend URL) |
 | Real client IP behind a proxy, ignored otherwise so it can't be spoofed | backend | `TRUST_PROXY=true` on Vercel/Render |

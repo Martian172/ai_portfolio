@@ -581,7 +581,7 @@ export function SplitStory({ onSkip, onOpenChat }) {
 // FINALE (halves slide in, mascot rises onto the floor, CTA)
 // ------------------------------------------------------------
 
-export function SplitFinale({ email, onOpenChat, linkedin, onLinkedIn, resumeUrl, resumeFile, onResume }) {
+export function SplitFinale({ email, onOpenChat, linkedin, onLinkedIn, resumeUrl, resumeFile, onResume, contactUrl }) {
   const sectionRef = useRef(null);
   const frontRef = useRef(null);
   const backRef = useRef(null);
@@ -645,7 +645,7 @@ export function SplitFinale({ email, onOpenChat, linkedin, onLinkedIn, resumeUrl
           />
         </div>
         <div className="split__cta">
-          <a href={`mailto:${email}`} className="btn btn--red" data-cursor="Email">
+          <a href={contactUrl || `mailto:${email}`} className="btn btn--red" data-cursor="Contact">
             Start a project <ArrowRight size={16} />
           </a>
           <button className="btn btn--night" onClick={onOpenChat} data-cursor="Chat">

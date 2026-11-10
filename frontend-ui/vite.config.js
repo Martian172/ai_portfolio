@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import { fileURLToPath } from 'node:url';
 
 // Adds a Content Security Policy to the production build only (the dev server's
 // hot-reload needs inline scripts). The page may run only its own scripts and may
@@ -39,6 +40,15 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
   return {
     plugins: [react(), contentSecurityPolicy(env.VITE_API_URL || '')],
+    // Two pages: the portfolio (/) and the contact page (/contact/).
+    build: {
+      rollupOptions: {
+        input: {
+          main: fileURLToPath(new URL('./index.html', import.meta.url)),
+          contact: fileURLToPath(new URL('./contact/index.html', import.meta.url)),
+        },
+      },
+    },
     server: { host: '127.0.0.1', port: 5173, proxy: LOCAL_API },
     preview: { host: '127.0.0.1', port: 4173, proxy: LOCAL_API },
   };

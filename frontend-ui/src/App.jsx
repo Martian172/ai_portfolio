@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react";
-import { ArrowRight, Send, LoaderCircle, Mail, Volume2, VolumeX, Save, Download } from "lucide-react";
+import { ArrowRight, Send, LoaderCircle, Mail, Save, Download } from "lucide-react";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import ReactMarkdown from "react-markdown";
 import { SplitStory, SplitFinale } from "./SplitStory.jsx";
@@ -7,29 +7,17 @@ import ChatWidget from "./ChatWidget.jsx";
 import Buddy from "./Buddy.jsx";
 import Street from "./Street.jsx";
 import Factory from "./Factory.jsx";
-import { sfx, isSoundOn, setSoundOn, onSoundChange } from "./sound.js";
+import { sfx } from "./sound.js";
 import Achievements, { TrophyButton, unlock } from "./Achievements.jsx";
+import {
+  API_URL, GITHUB_USERNAME, GITHUB_PROFILE_URL, EMAIL, LINKEDIN_URL, RESUME_URL, RESUME_FILE, CONTACT_URL,
+  grabResume, openLinkedIn, reduceMotion, Cursor, DelhiClock, SoundToggle, SiteFooter,
+} from "./shared.jsx";
 
 // ============================================================
 // CONFIGURATION & CONTENT (from Ansh's resume)
 // ============================================================
 
-// The API is served from the same domain under /api (Vercel in production, the Vite proxy in
-// development). Set VITE_API_URL only if the backend lives on a different domain. It is NOT a
-// secret: API keys live only on the backend server and never reach the browser.
-const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
-const GITHUB_USERNAME = "martian172";
-const GITHUB_PROFILE_URL = `https://github.com/${GITHUB_USERNAME}`;
-const EMAIL = "singhanshz172@gmail.com";
-const LINKEDIN_URL = "https://www.linkedin.com/in/anshz";
-const RESUME_URL = `${import.meta.env.BASE_URL}Ansh_Singh_Resume.pdf`;
-const RESUME_FILE = "Ansh_Singh_Resume.pdf";
-
-const grabResume = () => {
-  sfx.powerUp();
-  unlock("loot");
-};
-const openLinkedIn = () => unlock("party");
 
 // RPG-style inventory: the downloadable / outbound links, styled as item slots.
 const inventory = [
@@ -192,88 +180,6 @@ const chapters = [
   { id: "contact", label: "Contact" },
 ];
 
-const reduceMotion = () =>
-  typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-
-// ============================================================
-// CUSTOM CURSOR (dot + ring + contextual label)
-// ============================================================
-
-function Cursor() {
-  const dotRef = useRef(null);
-  const ringRef = useRef(null);
-  const [label, setLabel] = useState("");
-  const [enabled, setEnabled] = useState(false);
-
-  useEffect(() => {
-    const fine = window.matchMedia("(pointer: fine)").matches && !reduceMotion();
-    setEnabled(fine);
-    if (!fine) return;
-    document.documentElement.classList.add("has-cursor");
-
-    const target = { x: -100, y: -100 };
-    const ring = { x: -100, y: -100 };
-    let frame;
-
-    const move = (e) => {
-      target.x = e.clientX;
-      target.y = e.clientY;
-      if (dotRef.current) dotRef.current.style.transform = `translate(${target.x}px, ${target.y}px)`;
-    };
-    const over = (e) => {
-      const el = e.target.closest?.("[data-cursor], a, button");
-      setLabel(el ? el.getAttribute("data-cursor") || "•" : "");
-    };
-    const tick = () => {
-      ring.x += (target.x - ring.x) * 0.18;
-      ring.y += (target.y - ring.y) * 0.18;
-      if (ringRef.current) ringRef.current.style.transform = `translate(${ring.x}px, ${ring.y}px)`;
-      frame = requestAnimationFrame(tick);
-    };
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerover", over);
-    tick();
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerover", over);
-      document.documentElement.classList.remove("has-cursor");
-    };
-  }, []);
-
-  if (!enabled) return null;
-  const active = label !== "";
-  return (
-    <div className="cursor" aria-hidden="true">
-      <div ref={ringRef} className="cursor__pos">
-        <div className={`cursor__ring ${active ? "is-active" : ""} ${label.length > 1 ? "has-label" : ""}`}>
-          {label.length > 1 && <span className="cursor__label">{label}</span>}
-        </div>
-      </div>
-      <div ref={dotRef} className="cursor__pos">
-        <div className="cursor__dot" />
-      </div>
-    </div>
-  );
-}
-
-// ============================================================
-// HOOKS
-// ============================================================
-
-function useDelhiClock() {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
-  return now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "Asia/Kolkata" });
-}
-
-// Isolated so the per-second tick only re-renders the clock, not the whole page.
-function DelhiClock() {
-  return <span>New Delhi {useDelhiClock()}</span>;
-}
 
 // ============================================================
 // MAIN APP
@@ -286,8 +192,6 @@ export default function App() {
   const [mission, setMission] = useState(0);
   const pctRef = useRef(null);
   const [chatOpen, setChatOpen] = useState(false);
-  const [soundOn, setSoundOnState] = useState(isSoundOn);
-  useEffect(() => onSoundChange(setSoundOnState), []);
   const openChat = useCallback(() => {
     sfx.robot();
     setChatOpen(true);
@@ -536,7 +440,7 @@ export default function App() {
         <nav className="site-header__nav text-mono" aria-label="Main">
           <a href="#home" className={activeChapter === "home" ? "is-active" : ""}>Index</a>
           <a href="#pipeline" className={["pipeline", "lab", "player", "missions"].includes(activeChapter) ? "is-active" : ""}>Work</a>
-          <a href="#contact" className={activeChapter === "contact" ? "is-active" : ""}>Contact</a>
+          <a href={CONTACT_URL} data-cursor="Contact">Contact</a>
           <a href={RESUME_URL} download={RESUME_FILE} onClick={grabResume} className="site-header__resume" data-cursor="Download">
             Resume <Download size={12} />
           </a>
@@ -546,20 +450,7 @@ export default function App() {
           <DelhiClock />
           <span className="site-header__pct" ref={pctRef}>000%</span>
           <TrophyButton open={trophiesOpen} onClick={() => { sfx.tick(); setTrophiesOpen((o) => !o); }} />
-          <button
-            className={`sound-toggle ${soundOn ? "is-on" : ""}`}
-            onClick={() => setSoundOn(!soundOn)}
-            aria-pressed={soundOn}
-            aria-label={soundOn ? "Mute sound effects" : "Turn on sound effects"}
-            data-cursor={soundOn ? "Mute" : "Sound"}
-          >
-            {soundOn ? <Volume2 size={14} /> : <VolumeX size={14} />}
-            <span className="sound-toggle__bars" aria-hidden="true">
-              <i />
-              <i />
-              <i />
-            </span>
-          </button>
+          <SoundToggle />
         </div>
       </header>
 
@@ -869,41 +760,11 @@ export default function App() {
           resumeUrl={RESUME_URL}
           resumeFile={RESUME_FILE}
           onResume={grabResume}
+          contactUrl={CONTACT_URL}
         />
       </main>
 
-      {/* ---------------- FOOTER ---------------- */}
-      <footer className="site-footer">
-        <div className="container site-footer__grid">
-          <div>
-            <div className="wordmark">
-              ANSH<b>.</b>SINGH
-            </div>
-            <p className="text-mono dim">AI Engineer · New Delhi, IN</p>
-          </div>
-          <div className="site-footer__col text-mono">
-            <span className="dim">Contact</span>
-            <a href={`mailto:${EMAIL}`} className="site-footer__mail">{EMAIL}</a>
-          </div>
-          <div className="site-footer__col text-mono">
-            <span className="dim">Elsewhere</span>
-            <a href={GITHUB_PROFILE_URL} target="_blank" rel="noreferrer">
-              GitHub ↗
-            </a>
-            <a href={LINKEDIN_URL} target="_blank" rel="noreferrer" onClick={openLinkedIn}>
-              LinkedIn ↗
-            </a>
-            <a href={RESUME_URL} download={RESUME_FILE} onClick={grabResume}>
-              Resume (PDF) ↓
-            </a>
-          </div>
-          <div className="site-footer__col text-mono">
-            <span className="dim">© {new Date().getFullYear()}</span>
-            <span>Built with FastAPI, Groq &amp; React</span>
-            <a href="#home">Back to top ↑</a>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

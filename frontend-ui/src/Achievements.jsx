@@ -15,6 +15,7 @@ export const ACHIEVEMENTS = [
   { id: "loot", name: "Legendary loot", desc: "Picked up the resume save file.", hint: "Check the inventory" },
   { id: "party", name: "Party up", desc: "Opened LinkedIn to connect.", hint: "Invite the player to your party" },
   { id: "end", name: "End credits", desc: "Reached the final level.", hint: "Reach the very end" },
+  { id: "signal", name: "Signal sent", desc: "Sent Ansh a message.", hint: "Use the contact form" },
   { id: "konami", name: "Cheat code", desc: "↑↑↓↓←→←→BA. CRT mode unlocked.", hint: "Old-school players know the code", secret: true },
 ];
 

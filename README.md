@@ -180,21 +180,18 @@ flowchart LR
 
 ## Run it locally
 
-**Requirements:** Python 3.13 with [uv](https://docs.astral.sh/uv/), Node.js 20+, a free [Groq API key](https://console.groq.com/keys) and, for the contact form, a free [Resend API key](https://resend.com/api-keys).
 
 ```bash
 # 1. Clone
 git clone https://github.com/Martian172/ai_portfolio.git
 cd ai_portfolio
 
-# 2. Secrets: copy the template and fill in your keys (never commit .env)
-cp .env.example .env
 
-# 3. Backend (http://127.0.0.1:8000)
+# 2. Backend (http://127.0.0.1:8000)
 uv sync
 uv run uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
 
-# 4. Frontend, in a second terminal (http://127.0.0.1:5173)
+# 3. Frontend, in a second terminal (http://127.0.0.1:5173)
 cd frontend-ui
 npm install
 npm run dev
@@ -206,27 +203,7 @@ Open http://127.0.0.1:5173. The Vite dev server forwards `/api` to the backend o
 
 ---
 
-## Environment variables
 
-All secrets live **only on the backend**: in `.env` locally and in Vercel's *Environment Variables* in production. Nothing secret is ever bundled into the frontend.
-
-| Variable | Required | Purpose |
-|---|---|---|
-| `GROQ_API_KEY` | ✅ | Powers the AI chat |
-| `GROQ_MODEL` | | Model name (default `openai/gpt-oss-120b`) |
-| `RESEND_API_KEY` | for contact | Sends contact-form messages |
-| `CONTACT_TO_EMAIL` | for contact | Inbox that receives messages (with Resend's test sender, the address you signed up with) |
-| `CONTACT_FROM_EMAIL` | | Sender after verifying your own domain in Resend |
-| `GITHUB_USERNAME` | | Whose public repos the AI knows about (default `martian172`) |
-| `GITHUB_TOKEN` | | Optional read-only token to avoid GitHub's anonymous rate limit |
-| `ALLOWED_ORIGINS` | | Extra origins allowed to call the API from a browser (not needed on one domain) |
-| `CHAT_LIMIT_PER_MINUTE` / `CHAT_LIMIT_PER_DAY` / `CHAT_GLOBAL_LIMIT_PER_DAY` | | Chat abuse limits (defaults 6 / 60 / 1500) |
-| `CONTACT_LIMIT_PER_HOUR` / `CONTACT_LIMIT_PER_DAY` / `CONTACT_GLOBAL_LIMIT_PER_DAY` | | Contact limits (defaults 3 / 6 / 100) |
-| `ENABLE_DOCS` | | `true` shows `/docs` locally; keep off in production |
-
-See [`.env.example`](.env.example) for a commented template.
-
----
 
 ## Deploying to Vercel
 
